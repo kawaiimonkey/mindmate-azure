@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MindMate</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --sage: #8BAF93; --charcoal: #2D2D2D; --cream: #FAF7F2; --muted: #8A8A8A; --danger: #D9534F; --sidebar-w: 260px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--charcoal); display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: var(--sidebar-w); background: white; border-right: 1px solid #E5E5E5; padding: 30px 20px; display: flex; flex-direction: column; gap: 30px; }
+        .brand { font-size: 1.4rem; font-weight: bold; color: var(--charcoal); display: flex; align-items: center; gap: 10px; }
+        .nav-links { display: flex; flex-direction: column; gap: 10px; }
+        .nav-links a { text-decoration: none; color: #555; font-weight: 500; padding: 12px 16px; border-radius: 10px; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
+        .nav-links a:hover { background: #F5F5F5; }
+        .nav-links a.active { background: #F0F5F2; color: var(--sage); }
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        .page-header { margin-bottom: 30px; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.2rem; }
+        .status-note { margin-top: 8px; font-size: 0.9rem; color: var(--muted); }
+        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+        .card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        .card-title { font-family: 'DM Serif Display', serif; font-size: 1.3rem; margin-bottom: 20px; border-bottom: 1px solid #EEE; padding-bottom: 12px; }
+        .task-list { list-style: none; }
+        .task-item { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid #F5F5F5; gap: 20px; }
+        .task-item:last-child { border-bottom: none; }
+        .task-info strong { display: block; font-size: 1.05rem; margin-bottom: 6px; }
+        .task-info span { font-size: 0.85rem; color: var(--muted); }
+        .tag { font-size: 0.8rem; padding: 6px 12px; border-radius: 12px; background: #FFF3E0; color: #E65100; font-weight: bold; white-space: nowrap; }
+        .tag.done { background: #DCF0E3; color: #2E7D32; }
+        .empty-state { color: var(--muted); font-size: 0.95rem; line-height: 1.6; padding-top: 10px; }
+        .mood-row { display: flex; justify-content: space-between; align-items: flex-end; height: 120px; padding-top: 20px; }
+        .mood-bar-container { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; }
+        .mood-bar { width: 60%; background: var(--sage); border-radius: 6px; }
+        .mood-label { font-size: 0.8rem; color: var(--muted); }
+        .alert-card { border: 2px solid #FADCDC; background: #FFF5F5; margin-top: 30px; }
+        .alert-card .card-title { color: var(--danger); border-color: #FADCDC; }
+        .alert-desc { font-size: 0.9rem; color: #666; margin-bottom: 20px; line-height: 1.6; }
+        .input-group { display: flex; flex-direction: column; gap: 10px; }
+        .input-group input { padding: 12px 15px; border: 1px solid #DDD; border-radius: 8px; font-size: 0.95rem; width: 100%; }
+        .input-group button { background: var(--charcoal); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.95rem; }
+        .input-group button:hover { background: #000; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="brand">MindMate</div>
+        <div class="nav-links">
+            <a href="chat.html">AI Check-in</a>
+            <a href="dashboard.html" class="active">Dashboard</a>
+            <a href="index.html" style="margin-top: auto; color: #999;" onclick="MindMateApp.clearSession()">Log out</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h1>Welcome back, Student</h1>
+            <p style="color: #888; margin-top: 5px;">Here is your wellness overview and schedule.</p>
+            <p class="status-note" id="dashboard-status"></p>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="grid-left">
+                <div class="card" style="min-height: 400px;">
+                    <h2 class="card-title">AI Extracted Schedule</h2>
+                    <ul class="task-list" id="task-list"></ul>
+                </div>
+            </div>
+
+            <div class="grid-right">
+                <div class="card">
+                    <h2 class="card-title">Weekly Mood Check-in</h2>
+                    <div class="mood-row">
+                        <div class="mood-bar-container"><div class="mood-bar" style="height: 60%; background: #8BAF93;"></div><span class="mood-label">Mon</span></div>
+                        <div class="mood-bar-container"><div class="mood-bar" style="height: 40%; background: #B8A9CC;"></div><span class="mood-label">Tue</span></div>
+                        <div class="mood-bar-container"><div class="mood-bar" style="height: 80%; background: #8BAF93;"></div><span class="mood-label">Wed</span></div>
+                        <div class="mood-bar-container"><div class="mood-bar" style="height: 30%; background: #D9534F;"></div><span class="mood-label">Thu</span></div>
+                        <div class="mood-bar-container"><div class="mood-bar" style="height: 50%; background: #B8A9CC;"></div><span class="mood-label">Fri</span></div>
+                    </div>
+                </div>
+
+                <div class="card alert-card">
+                    <h2 class="card-title">Emergency Alert Contact</h2>
+                    <p class="alert-desc">
+                        This panel is still using placeholder UI. It will be connected after the settings Function is added.
+                    </p>
+                    <div class="input-group">
+                        <input type="email" placeholder="e.g., counselor@sait.ca" value="">
+                        <button onclick="alert('This button will be connected after the settings Function is added.')">Save Contact</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.MINDMATE_API_BASE_URL = 'https://func-mindmate-dev-fehce4g0hnfaahgf.canadacentral-01.azurewebsites.net/api';
+    </script>
+    <script src="app.js?v=20260331-2"></script>
+    <script>
+        const userId = MindMateApp.ensureUserId();
+        const dashboardStatus = document.getElementById('dashboard-status');
+        const taskList = document.getElementById('task-list');
+
+        function escapeHtml(value) {
+            return value
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        function formatTaskSubtitle(task) {
+            const subtitle = task.subtitle ? escapeHtml(task.subtitle) : 'Added from your AI check-in.';
+            if (!task.dueDate) return subtitle;
+
+            const due = new Date(task.dueDate);
+            if (Number.isNaN(due.getTime())) return subtitle;
+            return `${subtitle} | Due ${due.toLocaleString()}`;
+        }
+
+        function renderTasks(tasks) {
+            if (!tasks.length) {
+                taskList.innerHTML = `
+                    <li class="empty-state">
+                        No AI-extracted tasks yet. Start a chat check-in and MindMate will populate your schedule here.
+                    </li>
+                `;
+                return;
+            }
+
+            taskList.innerHTML = tasks.map((task) => {
+                const isDone = task.status === 'done';
+                const titleStyle = isDone ? ' style="text-decoration: line-through;"' : '';
+                return `
+                    <li class="task-item"${isDone ? ' style="opacity: 0.6;"' : ''}>
+                        <div class="task-info">
+                            <strong${titleStyle}>${escapeHtml(task.title)}</strong>
+                            <span>${formatTaskSubtitle(task)}</span>
+                        </div>
+                        <span class="tag${isDone ? ' done' : ''}">${isDone ? 'Done' : 'Pending'}</span>
+                    </li>
+                `;
+            }).join('');
+        }
+
+        async function loadTasks() {
+            const apiBaseUrl = MindMateApp.getApiBaseUrl();
+            if (!apiBaseUrl) {
+                dashboardStatus.textContent = `Connected user: ${userId} | API: not configured`;
+                renderTasks([]);
+                return;
+            }
+
+            dashboardStatus.textContent = `Connected user: ${userId} | API: ${apiBaseUrl}`;
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/tasks?userId=${encodeURIComponent(userId)}`);
+                const payload = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(payload.details || payload.error || 'Unable to load tasks.');
+                }
+
+                renderTasks(payload?.data || []);
+            } catch (error) {
+                const message = error instanceof Error ? error.message : 'Unknown error';
+                dashboardStatus.textContent = `Task loading failed: ${message}`;
+                taskList.innerHTML = `<li class="empty-state">We could not load your schedule right now.</li>`;
+            }
+        }
+
+        loadTasks();
+    </script>
+</body>
+</html>

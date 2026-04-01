@@ -1,0 +1,16 @@
+{
+  "name": "mindmate-azure",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "func start",
+    "test": "echo \"No tests yet...\""
+  },
+  "dependencies": {
+    "@azure-rest/ai-content-safety": "^1.0.1",
+    "@azure/functions": "^4.0.0",
+    "mongoose": "^9.3.3",
+    "openai": "^6.33.0"
+  },
+  "main": "src/{index.js,functions/*.js}"
+}
