@@ -1,59 +1,77 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy Node.js app to Azure Web App - mindmate-frontend
+name: Build and deploy Next.js app to Azure Web App - mindmate-frontend
 
 on:
   push:
     branches:
       - main
+    paths:
+      - "frontend-next/**"
+      - ".github/workflows/main_mindmate-frontend.yml"
   workflow_dispatch:
+
+env:
+  APP_PATH: ./frontend-next
+  NODE_VERSION: "22.x"
+  AZURE_WEBAPP_NAME: mindmate-frontend
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend-next/package-lock.json
 
-      - name: Upload artifact for deployment job
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ${{ env.APP_PATH }}
+
+      - name: Build Next.js app
+        run: npm run build
+        working-directory: ${{ env.APP_PATH }}
+        env:
+          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
+
+      - name: Upload deployment artifact
         uses: actions/upload-artifact@v4
         with:
-          name: node-app
-          path: .
+          name: frontend-next-app
+          path: ${{ env.APP_PATH }}
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
-      - name: Download artifact from build job
+      - name: Download deployment artifact
         uses: actions/download-artifact@v4
         with:
-          name: node-app
-      
-      - name: Login to Azure
+          name: frontend-next-app
+          path: ./frontend-next
+
+      - name: Log in to Azure
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_9928DDD9D5354803917B6C2A69F82ECC }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_AC96A0F92E1C4449B38D9970323DEE4B }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_F6326FC0FE3B449AB06F2FD00FE5FEFE }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'mindmate-frontend'
-          slot-name: 'Production'
-          package: .
-          
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: Production
+          package: ./frontend-next
