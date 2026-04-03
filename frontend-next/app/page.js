@@ -1,4 +1,5 @@
 import Link from "next/link";
+import DeploymentStatusCard from "@/components/DeploymentStatusCard";
 
 export default function HomePage() {
   return (
@@ -29,6 +30,8 @@ export default function HomePage() {
               Dashboard
             </Link>
           </div>
+
+          <DeploymentStatusCard />
 
           <p className="hero-note">Prepared as a safe Next.js refactor track alongside the current frontend.</p>
         </section>

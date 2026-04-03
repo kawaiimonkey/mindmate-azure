@@ -203,6 +203,40 @@ input {
   font-size: 0.9rem;
 }
 
+.deployment-card {
+  margin: 0 0 24px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(109, 155, 120, 0.18);
+  box-shadow: 0 12px 28px rgba(65, 88, 78, 0.08);
+}
+
+.deployment-card.error {
+  border-color: rgba(217, 83, 79, 0.2);
+}
+
+.deployment-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sage-dark);
+  margin-bottom: 8px;
+}
+
+.deployment-message {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  margin-bottom: 6px;
+}
+
+.deployment-meta {
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
 .hero-visual {
   flex: 1;
   display: flex;
