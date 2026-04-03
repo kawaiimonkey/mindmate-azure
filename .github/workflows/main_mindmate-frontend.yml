@@ -46,6 +46,7 @@ jobs:
         with:
           name: frontend-next-app
           path: ${{ env.APP_PATH }}
+          include-hidden-files: true
 
   deploy:
     runs-on: ubuntu-latest
