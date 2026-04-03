@@ -1,0 +1,45 @@
+name: Build and deploy Node.js Azure Function App
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "host.json"
+      - "package.json"
+      - "package-lock.json"
+      - ".funcignore"
+      - ".github/workflows/main_mindmate-functions.yml"
+  workflow_dispatch:
+
+env:
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: "."
+  NODE_VERSION: "22.x"
+  AZURE_FUNCTIONAPP_NAME: func-mindmate-dev
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy to Azure Functions
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
